@@ -2370,6 +2370,17 @@ object Form1: TForm1
       Visible = False
       OnClick = DelButtonClick
     end
+    object StartCheckBox: TsCheckBox
+      Left = 15
+      Top = 78
+      Width = 121
+      Height = 17
+      Caption = 'Start with Windows'
+      TabOrder = 8
+      OnClick = StartCheckBoxClick
+      ImgChecked = 0
+      ImgUnchecked = 0
+    end
   end
   object GroupBox1: TsGroupBox
     Left = 8
@@ -2452,7 +2463,7 @@ object Form1: TForm1
       OnClick = ResetButtonClick
     end
     object LogCheckBox: TsCheckBox
-      Left = 119
+      Left = 115
       Top = 27
       Width = 74
       Height = 17

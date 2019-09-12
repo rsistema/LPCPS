@@ -7,7 +7,7 @@ uses
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, IniFiles, Vcl.StdCtrls, sLabel, CPort,
   Vcl.ComCtrls, sStatusBar, sSkinManager, Vcl.Buttons, sBitBtn, Vcl.ExtCtrls,
   sEdit, sSpinEdit, sComboBox, sButton, sPanel, acSlider, sCheckBox, CPortCtl,
-  sMemo, sGroupBox;
+  sMemo, sGroupBox, Registry;
 
 type
   TForm1 = class(TForm)
@@ -33,6 +33,7 @@ type
     SlideOffLabel: TsLabel;
     SlideOnLabel: TsLabel;
     TrayIcon1: TTrayIcon;
+    StartCheckBox: TsCheckBox;
     procedure FormCreate(Sender: TObject);
     procedure ResetButtonClick(Sender: TObject);
     procedure RunTimerTimer(Sender: TObject);
@@ -50,6 +51,7 @@ type
     procedure FormResize(Sender: TObject);
     procedure TrayIcon1DblClick(Sender: TObject);
     procedure DelButtonClick(Sender: TObject);
+    procedure StartCheckBoxClick(Sender: TObject);
   private
     { Private declarations }
     procedure FillStatusBar();
@@ -82,6 +84,28 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure SetAutoStart(AppName, AppTitle: string; bRegister: Boolean);
+const
+  RegKey = '\Software\Microsoft\Windows\CurrentVersion\Run';
+  // or: RegKey = '\Software\Microsoft\Windows\CurrentVersion\RunOnce';
+var
+  Registry: TRegistry;
+begin
+  Registry := TRegistry.Create;
+  try
+    Registry.RootKey := HKEY_LOCAL_MACHINE;
+    if Registry.OpenKey(RegKey, False) then
+    begin
+      if bRegister = False then
+        Registry.DeleteValue(AppTitle)
+      else
+        Registry.WriteString(AppTitle, AppName);
+    end;
+  finally
+    Registry.Free;
+  end;
+end;
 
 procedure TForm1.DelButtonClick(Sender: TObject);
 begin
@@ -235,6 +259,17 @@ begin
   sStatusBar1.Panels.Items[1].Text:= 'Port: ' + ComPort1.Port;
 end;
 
+procedure TForm1.StartCheckBoxClick(Sender: TObject);
+begin
+  // 1.Parameter: Path to your Exe-File
+  // 2. Parameter: the Title of your Application
+  // 3. Set (true) or Unset (false) Autorun
+  if (StartCheckBox.Checked) then
+    SetAutoStart(ParamStr(0), Form1.Caption, True)
+  else
+    SetAutoStart(ParamStr(0), Form1.Caption, False)
+end;
+
 procedure TForm1.StartEditChange(Sender: TObject);
 begin
   SecNull();
@@ -252,6 +287,8 @@ begin
     begin
       if FileExists('config.ini') then
         begin
+          //Load Auto Run
+          StartCheckBox.Checked := Conf.ReadBool('Misc', 'Auto Run', False);
           //Load Position Form
           Form1.Left := Conf.ReadInteger('Form', 'Left', 0);
           Form1.Top := Conf.ReadInteger('Form', 'Top', 0);
@@ -275,6 +312,8 @@ begin
       Conf.WriteInteger('Form', 'Left', Form1.Left);
       Conf.WriteInteger('Form', 'Top', Form1.Top);
       Conf.WriteBool('Form', 'Log', LogCheckBox.Checked);
+      //Save Auto Start UP
+      Conf.WriteBool('Misc', 'Auto Run', StartCheckBox.Checked);
       //Gambiarra To Save Record
       for I := 0 to 4 do
         begin
@@ -427,13 +466,13 @@ begin
               begin
                 Command[I].Running := True;
                 ComPort1.WriteStr(Command[I].CmdStart);
-                LogMemo.Lines.Add('Start: ' + Command[I].Name + 'Send: ' + Command[I].CmdStart + TimeToStr(Hour));
+                LogMemo.Lines.Add('Start: ' + Command[I].Name + #9 + 'Send: ' + Command[I].CmdStart + TimeToStr(Hour));
               end
             else if ((Hour >= Command[I].TimeStop) and (Command[I].Running = True)) then
               begin
                 Command[I].Running := False;
                 ComPort1.WriteStr(Command[I].CmdStop);
-                LogMemo.Lines.Add('Stop: ' + Command[I].Name + 'Send: ' + Command[I].CmdStop + TimeToStr(Hour));
+                LogMemo.Lines.Add('Stop: ' + Command[I].Name + #9 + 'Send: ' + Command[I].CmdStop + TimeToStr(Hour));
               end;
         end;
     end;
