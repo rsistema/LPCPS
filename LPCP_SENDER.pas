@@ -287,12 +287,13 @@ begin
     begin
       if FileExists('config.ini') then
         begin
-          //Load Auto Run
-          StartCheckBox.Checked := Conf.ReadBool('Misc', 'Auto Run', False);
+          //Load Start with Windows / Log /
+          StartCheckBox.Checked := Conf.ReadBool('Misc', 'Start With Windows', False);
+          LogCheckBox.Checked := Conf.ReadBool('Misc', 'Log', False);
+          RunSlider.SliderOn := Conf.ReadBool('Misc', 'Run Button', False);
           //Load Position Form
-          Form1.Left := Conf.ReadInteger('Form', 'Left', 0);
-          Form1.Top := Conf.ReadInteger('Form', 'Top', 0);
-          LogCheckBox.Checked := Conf.ReadBool('Form', 'Log', False);
+          Form1.Left := Conf.ReadInteger('Position', 'Left', 0);
+          Form1.Top := Conf.ReadInteger('Position', 'Top', 0);
           //Load Setup CPort Config
           ComPort1.Port := Conf.ReadString('Setup', 'Port', '');
           //Load Ini List
@@ -309,11 +310,12 @@ begin
       //Save Setup CPort Config
       Conf.WriteString('Setup', 'Port', ComPort1.Port);
       //Save Position Form
-      Conf.WriteInteger('Form', 'Left', Form1.Left);
-      Conf.WriteInteger('Form', 'Top', Form1.Top);
-      Conf.WriteBool('Form', 'Log', LogCheckBox.Checked);
-      //Save Auto Start UP
-      Conf.WriteBool('Misc', 'Auto Run', StartCheckBox.Checked);
+      Conf.WriteInteger('Position', 'Left', Form1.Left);
+      Conf.WriteInteger('Position', 'Top', Form1.Top);
+      //Save Auto Start UP / LOG
+      Conf.WriteBool('Misc', 'Start With Windows', StartCheckBox.Checked);
+      Conf.WriteBool('Misc', 'Run Button', RunSlider.SliderOn);
+      Conf.WriteBool('Misc', 'Log', LogCheckBox.Checked);
       //Gambiarra To Save Record
       for I := 0 to 4 do
         begin
